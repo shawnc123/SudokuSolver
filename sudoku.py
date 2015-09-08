@@ -80,6 +80,44 @@ class Board:
                             else:
                                 raise AssertionError("Something is Wrong!")
 
+    def __findTilesWithValue(self, n):
+        posWithValue = []
+        for i in range(9):
+            for j in range(9):
+                if self.board[i][j].value == n:
+                    posWithValue.append((i, j))
+        return posWithValue
+
+    def __findCandidatesForTwoOfThreeRule(self, n):
+        positions = self.__findTilesWithValue(n)
+        twoOfThreeCandidates = []
+        for t1 in positions:
+            for t2 in positions:
+                if t1 != t2:
+                    if t1[0] >= t2[0]:
+                        if t1[0] // 3 == t2[0] // 3:
+                            twoOfThreeCandidates.append((t1, t2))
+                    if t2[0] >= t2[1]:
+                        if t1[1] // 3 == t2[1] // 3:
+                            twoOfThreeCandidates.append((t1, t2))
+        return twoOfThreeCandidates
+
+    def __findSubgroupsForNumber(self, n):
+        # TODO FINISH THIS
+        twoOfThreePairs = self.__findCandidatesForTwoOfThreeRule(n)
+        print(twoOfThreePairs)
+        for pair in twoOfThreePairs:
+            if pair[0][0] // 3 == pair[1][0] // 3: # if x-coordinates in same box group
+                pass
+
+
+    def __twoOfThreeRuleForNumber(self, n):
+        print(self.__findSubgroupsForNumber(n))
+
+    def __twoOfThreeRule(self):
+        for i in range(1, 10):
+            self.__twoOfThreeRuleForNumber(i)
+
     def __done(self):
         for i in range(9):
             for j in range(9):
@@ -91,6 +129,7 @@ class Board:
         while not self.__done():
             self.__eliminatePossibilities()
             self.__setValues()
+            self.__twoOfThreeRule()
 
  
 f = open(sys.argv[1], "r")
