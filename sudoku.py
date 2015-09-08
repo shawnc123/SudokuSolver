@@ -103,15 +103,55 @@ class Board:
         return twoOfThreeCandidates
 
     def __findSubgroupsForNumber(self, n):
-        # TODO FINISH THIS
+        # TODO REFACTOR THIS CAUSE ITS GROSS
         twoOfThreePairs = self.__findCandidatesForTwoOfThreeRule(n)
-        print(twoOfThreePairs)
+        possibleTriples = []
         for pair in twoOfThreePairs:
-            if pair[0][0] // 3 == pair[1][0] // 3: # if x-coordinates in same box group
-                pass
-
+            if pair[0][0] // 3 == pair[1][0] // 3: # if y-coordinates in same box group
+                boxGroup = pair[0][0] // 3
+                possibleYcos = set([3*boxGroup, 3*boxGroup + 1, 3*boxGroup+2]) 
+                y1 = pair[0][0]
+                y2 = pair[1][0]
+                takenYcos = set([y1, y2])
+                thirdCoordSet = possibleYcos - takenYcos
+                if len(thirdCoordSet) == 1:
+                    yCo = list(thirdCoordSet)[0]
+                    xBoxGroup1 = pair[0][1] // 3
+                    xBoxGroup2 = pair[1][1] // 3
+                    xBoxGroupSet = set([0,1,2]) - set([xBoxGroup1, xBoxGroup2])
+                    if len(xBoxGroupSet) == 1:
+                        xBoxGroup = list(xBoxGroupSet)[0]
+                        possibleSpots = ((yCo, 3*xBoxGroup), (yCo, 3*xBoxGroup+1), (yCo, 3*xBoxGroup+2))  # one of these three spots must be n
+                        possibleTriples.append(possibleSpots)
+                    else:
+                        raise AssertionError("dsfsfdsfdsfdsf")
+                else:
+                    raise AssertionError("KLDSJFDKLSFJDKLSFJ")
+            if pair[0][1] // 3 == pair[1][1] // 3: # x-cos are in same box group
+                boxGroup = pair[0][1] // 3
+                possibleXcos = set([3*boxGroup, 3*boxGroup + 1, 3*boxGroup+2]) 
+                x1 = pair[0][1]
+                x2 = pair[1][1]
+                takenXcos = set([x1, x2])
+                thirdCoordSet = possibleXcos - takenXcos
+                if len(thirdCoordSet) == 1:
+                    xCo = list(thirdCoordSet)[0]
+                    yBoxGroup1 = pair[0][0] // 3
+                    yBoxGroup2 = pair[1][0] // 3
+                    yBoxGroupSet = set([0,1,2]) - set([yBoxGroup1, yBoxGroup2])
+                    if len(yBoxGroupSet) == 1:
+                        yBoxGroup = list(yBoxGroupSet)[0]
+                        possibleSpots = ((xCo, 3*yBoxGroup), (xCo, 3*yBoxGroup+1), (xCo, 3*yBoxGroup+2))  # one of these three spots must be n
+                        possibleTriples.append(possibleSpots)
+                    else:
+                        raise AssertionError("dsfsfdsfdsfdsf")
+                else:
+                    raise AssertionError("KLDSJFDKLSFJDKLSFJ")
+           
+        return possibleTriples
 
     def __twoOfThreeRuleForNumber(self, n):
+        print(str(n))
         print(self.__findSubgroupsForNumber(n))
 
     def __twoOfThreeRule(self):
