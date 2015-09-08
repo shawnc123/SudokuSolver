@@ -1,5 +1,4 @@
 import sys
-import copy
 
 DEBUG = False
 
@@ -31,23 +30,37 @@ class Board:
 
     
     def print(self):
-        for row in self.board:
-            for tile in row:
-                tile.print()
-            print("")
+        for a in range(3):
+            for b in range(3):
+                for i in range(3):
+                    for j in range(3):
+                        print(" ", end="")
+                        self.board[3*a + b][3*i + j].print()
+                        print(" ", end="")
+                    if i != 2:    
+                        print("|", end="")
+                if b != 2:
+                    print("")
+            if a != 2:
+                print("\n-----------------------------")
+        print("\n\n")
 
     def __eliminateHorizontally(self):
         for row in self.board:
             for tile in row:
                 tile.eliminatedValues.update(set(t.value for t in row))
 
+    def __getValuesInColumn(self, i):
+        valuesInColumn = set()
+        for row in self.board:
+            if len(row) > 0:
+                valuesInColumn.add(row[i].value)
+        return valuesInColumn
+
+
     def __eliminateVertically(self):
         for i in range(9):
-            valuesInColumn = set()
-            copyOfBoard = copy.copy(self.board)
-            for copyOfRow in copyOfBoard:
-                if(len(copyOfRow) > 0):
-                    valuesInColumn.add(copyOfRow[i].value)
+            valuesInColumn = self.__getValuesInColumn(i)
             for row in self.board:
                 if(len(row) > 0):
                     row[i].eliminatedValues.update(valuesInColumn)
@@ -97,7 +110,7 @@ class Board:
                     if t1[0] >= t2[0]:
                         if t1[0] // 3 == t2[0] // 3:
                             twoOfThreeCandidates.append((t1, t2))
-                    if t2[0] >= t2[1]:
+                    if t1[1] >= t2[1]:
                         if t1[1] // 3 == t2[1] // 3:
                             twoOfThreeCandidates.append((t1, t2))
         return twoOfThreeCandidates
@@ -141,7 +154,7 @@ class Board:
                     yBoxGroupSet = set([0,1,2]) - set([yBoxGroup1, yBoxGroup2])
                     if len(yBoxGroupSet) == 1:
                         yBoxGroup = list(yBoxGroupSet)[0]
-                        possibleSpots = ((xCo, 3*yBoxGroup), (xCo, 3*yBoxGroup+1), (xCo, 3*yBoxGroup+2))  # one of these three spots must be n
+                        possibleSpots = ((3*yBoxGroup, xCo), (3*yBoxGroup+1, xCo), (3*yBoxGroup+2, xCo))  # one of these three spots must be n
                         possibleTriples.append(possibleSpots)
                     else:
                         raise AssertionError("dsfsfdsfdsfdsf")
@@ -150,12 +163,57 @@ class Board:
            
         return possibleTriples
 
+    # TODO REFACTOR THESE 3 elimante methods into one method
+    def __eliminateHorizontallyTwoOfThreeRule(self, n, remTrips):
+        stillRemTrips = []
+        for triple in remTrips:
+            stillRemSpots = []
+            for spot in triple:
+                rowNum = spot[0]
+                if n not in [t.value for t in self.board[rowNum]]:
+                    stillRemSpots.append(spot)
+            stillRemTrips.append(stillRemSpots)
+        return stillRemTrips
+
+    def __eliminateVerticallyTwoOfThreeRule(self, n, remTrips):
+        stillRemTrips = []
+        for triple in remTrips:
+            stillRemSpots = []
+            for spot in triple:
+                colNum = spot[1]
+                if n not in self.__getValuesInColumn(colNum):
+                    stillRemSpots.append(spot)
+            stillRemTrips.append(stillRemSpots)
+        return stillRemTrips
+
+    def __eliminateAlreadyFilledIn(self, remTrips):
+        stillRemTrips = []
+        for triple in remTrips:
+            stillRemSpots = []
+            for spot in triple:
+                rowNum = spot[0]
+                colNum = spot[1]
+                if self.board[rowNum][colNum].value is None:
+                    stillRemSpots.append(spot)
+            stillRemTrips.append(stillRemSpots)
+        return stillRemTrips
+
     def __twoOfThreeRuleForNumber(self, n):
-        print(str(n))
-        print(self.__findSubgroupsForNumber(n))
+        triples = self.__findSubgroupsForNumber(n)
+        remaining = self.__eliminateHorizontallyTwoOfThreeRule(n, triples)
+        remaining = self.__eliminateVerticallyTwoOfThreeRule(n, remaining)
+        remaining = self.__eliminateAlreadyFilledIn(remaining)
+        for remOfTriple in remaining:
+            if len(remOfTriple) == 1:
+                spot = list(remOfTriple)[0]
+                if self.board[spot[0]][spot[1]].value == None:
+                    self.board[spot[0]][spot[1]].value = n
+                    print(str(n) + str(spot))
+                    self.print()
+
 
     def __twoOfThreeRule(self):
-        for i in range(1, 10):
+        for i in range(1, 10):  
             self.__twoOfThreeRuleForNumber(i)
 
     def __done(self):
@@ -171,6 +229,16 @@ class Board:
             self.__setValues()
             self.__twoOfThreeRule()
 
+    def checkValidSolve(self):
+        #TODO PUT IN MORE VALID CHECKS TO MAKE SURE THE BOARD IS SOLVED CORRECTLY
+        for row in self.board:
+            if len(row) > 0:
+                valuesInRow = set([t.value for t in row])
+                if len(set([1,2,3,4,5,6,7,8,9]) - valuesInRow) > 0:
+                    return False
+                if len(valuesInRow) != 9:
+                    return False
+        return True
  
 f = open(sys.argv[1], "r")
 contents = f.read()
@@ -180,4 +248,5 @@ f.close()
 board.print()
 board.solve()
 board.print()
+print(board.checkValidSolve())
 
